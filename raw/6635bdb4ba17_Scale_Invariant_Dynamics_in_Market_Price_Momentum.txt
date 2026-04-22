@@ -1,0 +1,920 @@
+Scale Invariant Dynamics in Market Price Momentum
+Bruce H. Dean, Ph.D.
+ORCID: 0009-0008-8153-3269
+symplectic.research@gmail.com
+December 2025 (Revised March 2026, v1.2.3)
+Abstract
+We construct a kinematic phase space for E-mini S&P 500 futures by plotting
+price momentum against its rate of change, revealing a dissipative spiral attractor
+that persists from 1-minute to weekly timescales and across six major futures markets.
+Applying sparse identification of nonlinear dynamics (SINDy) to 15 years of minute-level
+data, the algorithm discovers that momentum dynamics follow a stochastic damped
+harmonic oscillator (SDHO), a structure that emerges from the data rather than by a
+priori assumption.
+Three dimensionless quantities characterize these dynamics: dissipation rate Ω≈
+1.15, deterministic fraction R2 ≈0.57, and scaled restoring force Φ (market-specific).
+Cross-market analysis reveals that Ωand R2 are universal across asset classes (CV
+< 4%), while Φ varies by more than an order of magnitude, encoding asset-specific
+information about mean-reversion intensity. The Fisher information metric on the
+SDHO parameter space is diagonal in (k, Ω, σ), which provides a geometric explanation
+for the observed universality: Ωis isolated on the statistical manifold, and Φ = σ2/(2Ω)
+absorbs the coordinate dependence of k.
+Eigenvalue analysis places the system near the critical damping boundary, with
+characteristic decay times of ≈1-4 hours at hourly aggregation and a half-life of ≈2.5
+hours for momentum shocks. The look-back parameter controls the transition between
+underdamped and overdamped regimes, a finding with natural economic content: the
+near-critical equilibrium may reflect a dynamical balance between mean-reversion and
+trend-following strategies. We connect these results to Liouville’s theorem, contact
+geometry for dissipative systems, and the Hurst exponent, providing a mechanistic
+explanation for the widely documented anti-persistence (H < 0.5) at short horizons.
+At weekly and longer horizons, the linear SDHO gives way to nonlinear dynamics,
+developed in a companion paper (Dean, 2026).
+Notes: We use “stable” in the empirical sense of consistency across timescales, markets,
+and coordinate choices, not as a claim of mathematical invariance. The reported R2 reflects
+conditional variance of momentum acceleration, not return predictability or tradable alpha.
+1
+
+
+The coefficient of variation (CV = standard deviation / mean × 100%) measures relative
+dispersion.
+Keywords: dynamical systems, econophysics, market microstructure, sparse identification,
+SINDy, scale invariance, phase space, futures markets
+JEL Classification: G12, G14, G17, C32, C58
+1. Introduction
+1.1 Motivation
+Financial markets combine predictable structure with apparent randomness. While the
+efficient market hypothesis suggests price changes should be unpredictable, empirical evidence
+reveals patterns: momentum effects at intermediate horizons, mean reversion at short horizons,
+and volatility clustering across timescales. This raises a question: can we identify stable
+parameters that characterize market dynamics?
+The answer is yes, but what may be of additional interest is the representation of market
+dynamics within the broader context of dynamical systems information geometry, where we
+see many beautiful structures emerging that have economic significance.
+This paper applies such an approach to financial markets, but rather than analyzing price
+returns directly, we construct a phase space representation from actual market data, plotting
+market momentum against its rate of change, and then analyze the resulting flow field. This
+approach has been considered in other application areas (Dean, 1999), and motivates the
+application here. Indeed, as we discuss in the paper, the market phase diagrams display
+a non-trivial spiral topology, typical for a dissipative dynamical system, a fact that is not
+immediately obvious from a standard time series analysis of market price action.
+This paper takes an empirical-first approach. Rather than postulating a dynamical model
+and then fitting parameters, we construct a kinematic phase space from price data, examine
+the topological structure of the resulting flow field, and apply sparse identification methods
+to derive the governing equations. And as mentioned, the dynamical system that emerges is
+exactly the stochastic damped harmonic oscillator (SDHO), a structure discovered by the
+SINDy algorithm rather than assumed, as is often the case in the standard approach to
+analyzing the market (Bouchaud and Cont, 1998; Sandoval and De Paula Franca, 2011).
+1.2 Market as a Dynamical System
+To analyze the market as a dynamical system, consider a simple construction: plot price
+momentum on one axis and its rate of change on the other. The momentum coordinate x
+measures recent trend (a 5-bar log return), while the acceleration coordinate y = ∆x (i.e.,
+change in momentum) measures whether that trend is strengthening or weakening. Every
+moment in time becomes a point in this two-dimensional phase space; the market’s evolution
+2
+
+
+traces a trajectory through it. In fact, each point in this diagram represents an initial
+condition of the market state, and so what we see is the dynamical evolution for every initial
+condition, displaying the totality of what is possible from a dynamical systems perspective.
+Figure 1 shows the structure that emerges from 15 years of 1-min E-mini S&P 500 futures
+data, aggregated to 1 hour candles, showing a distinct spiral structure, with trajectories
+curving inward toward the origin. This is not how random walks appear: random walks
+produce diffuse, directionless flow fields. What appears here is the signature of a dissipative
+dynamical system, the same topology that governs a damped harmonic oscillator. Eigenvalue
+analysis in Section 6 reveals that the system sits near the critical damping boundary, where
+the interplay of deterministic dynamics and stochastic forcing produces the spiral structure
+visible in the phase portraits. We make the point that the market evolution depends on both
+deterministic and stochastic components, and it is the deterministic component that is shown
+in Figure 1, as we will discuss in more detail below.
+Natural questions follow: Is this structure robust across timescales? Does it appear in other
+markets? Can we be systematic about developing the equations that govern it? This paper
+addresses each question.
+1.3 Main Contributions
+The paper makes contributions in four areas: on the empirical side, the phase portraits reveal
+that futures price momentum exhibits a stable dissipative attractor with spiral topology,
+persisting from 1-minute to weekly timescales and across multiple asset classes. The system
+sits near the critical damping boundary, where the look-back parameter controls the transition
+between underdamped and overdamped regimes, a finding that turns out to have natural
+economic content, as discussed in Section 6.1.
+Next, we apply sparse identification (SINDy) to futures data in a phase space setting, letting
+the data dictate the governing equations from a library of candidate functions. This inverts
+the standard approach in which the dynamical equations are postulated and then fit to data;
+here the functional form itself is discovered.
+The quantitative contribution is the identification of three dimensionless parameters, dissipa-
+tion rate Ω, deterministic fraction R2, and scaled restoring force Φ, that remain stable across
+five orders of magnitude in timescale and characterize the balance between deterministic
+and stochastic dynamics. The first two are universal across asset classes; the third encodes
+market-specific information about mean-reversion intensity.
+Finally, on the theoretical side, we connect these empirical findings to standard frameworks
+from dynamical systems theory, including Liouville’s theorem for phase space contraction,
+information geometry for coordinate-independent characterization, and contact geometry for
+the proper treatment of dissipative systems.
+3
+
+
+Figure 1: ES futures phase portrait at 1-hour aggregation (∼92,000 observations). The
+topology shows a stable attractor toward the origin, consistent with mean-reverting dynamics.
+1.4 Related Literature
+Our approach differs from earlier phase space applications in finance. Recurrence plot analysis
+(Bastos and Caiado, 2011; Marwan et al., 2007) use Takens embedding (Takens, 1981) to
+reconstruct an abstract phase space; this is useful for detecting regime changes but the
+reconstructed dimensions lack direct physical interpretation. In contrast, we construct a
+kinematic phase space where coordinates have explicit economic meaning.
+4
+
+
+The damped oscillator model has appeared in finance before (Stádník, 2014). Bouchaud and
+Cont (1998) developed a Langevin approach to market fluctuations, and Sandoval and De
+Paula Franca (2011) used damped oscillators to model price recovery after shocks. However,
+these papers simply assume the oscillator structure, and then fit parameters. Our contribution
+is that SINDy discovers this structure from a candidate library containing nonlinear terms
+up to a given order.
+Safari and Schmidhuber (2025) recently documented timescale-dependent transitions between
+trending and reverting regimes across multiple asset classes, finding that markets exhibit
+mean-reversion at short horizons and momentum at longer horizons.
+Our phase space
+framework provides a geometric visualization of this phenomenon and identifies the governing
+equations. Their empirical findings align closely with what we observe: the spiral attractor
+structure we document corresponds to the mean-reversion regime they identify at shorter
+timescales.
+The SINDy algorithm was developed by Brunton, Proctor, and Kutz (2016), with extensions
+to stochastic systems by Boninsegna, Nüske, and Clementi (2018). It has been widely used
+in physics and engineering but, to our knowledge, not previously to financial data in this
+kinematic framework.
+2. Data and Phase Space
+2.1 Data Description
+The primary dataset for this study is the E-mini S&P 500 (ES) futures contract, traded on the
+Chicago Mercantile Exchange. We chose ES because it is among the most liquid instruments
+in the market, offering deep order books and tight spreads that minimize microstructure
+noise. The dataset spans June 2010 through December 2025 and contains approximately 5.4
+million one-minute bars, covering roughly 3,880 trading sessions. This gives us a substantial
+window into market behavior across a variety of regimes, including the post-GFC recovery,
+the 2020 pandemic crash, and the inflationary period of 2022-2023. Table 1 summarizes the
+basic statistics.
+Table 1: Summary statistics for the E-mini S&P 500 (ES) futures dataset.
+Statistic
+Value
+Total bars
+5,360,793
+Date range
+June 2010 to December 2025
+Trading sessions
+∼3,880
+5
+
+
+2.2 Phase Space Construction
+The idea behind phase space construction (Dean, 1999) is borrowed from classical mechanics,
+where the state of a system is described not just by its position but also by its velocity. Here
+we do the same thing with price data: rather than looking at momentum alone, we plot
+momentum alongside its rate of change, giving us a two-dimensional picture of the market’s
+state at every moment in time.
+Concretely, the momentum coordinate is a log return over a look-back window:
+xt = ln
+ Pt
+Pt−n
+!
+× 100
+where Pt is the closing price and n is the look-back period (baseline n = 5). The acceleration
+coordinate is simply the change in momentum from one bar to the next:
+yt = xt −xt−1 = ∆xt
+Together, the pair (xt, yt) locates the market in phase space at time t. The interpretation is
+intuitive: x tells us which direction the market has been moving (and how much), while y
+tells us whether that move is gaining or losing steam.
+To construct the flow field shown in Figure 1, we discretize this phase space into a grid and
+compute the average next-period displacement from each cell. The result is a vector field that
+reveals the expected direction and magnitude of motion from any starting point, essentially a
+map of where the market “wants to go” from every possible initial condition.
+2.3 Scale Invariance
+Is the spiral structure of Figure 1 an artifact of aggregation timescale? To test this, we
+aggregated minute-level data to multiple timescales: 1 minute, 5 minutes, 15 minutes, 1 hour,
+4 hours, and daily. The results are shown in Figure 2 where we see that the persistence across
+timescales argues against a pure microstructure explanation. Bid-ask bounce dominates at
+high frequencies but averages out at hourly or daily aggregation. But the central spiral
+structure persists across five orders of magnitude in observation count.
+2.4 Market Invariance
+The spiral attractor in ES futures is striking, but a single market is just a single market. The
+natural question is whether this structure is specific to the S&P 500, or whether it reflects
+something more general about how liquid markets work? To find out, we applied identical
+methodology to five additional futures spanning different asset classes: Nasdaq-100 (NQ),
+crude oil (CL), gold (GC), Treasury bonds (ZB), and the euro/dollar cross (6E). The results
+are collected in Table 2.
+6
+
+
+Figure 2: Phase portraits at six timescales from 1-minute (n=5.4M) to daily (n=4,816). The
+same qualitative structure, a spiral toward the origin, appears at every resolution, spanning
+five orders of magnitude in observation count.
+Table 2: Dimensionless quantities for six major futures markets at 5-bar momentum look-back.
+Ωand R2 are universal (CV < 4%), while Φ varies by asset class.
+Market
+Asset Class
+Ω
+R2
+Φ
+ES
+Equity Index
+1.15
+0.57
+0.046
+NQ
+Equity Index
+1.21
+0.59
+0.069
+CL
+Energy
+1.21
+0.59
+0.292
+GC
+Precious Metal
+1.12
+0.56
+0.106
+ZB
+Fixed Income
+1.15
+0.58
+0.021
+6E
+Currency
+1.14
+0.57
+0.016
+Mean
+1.15
+0.58
+0.092
+CV
+3.0%
+2.0%
+103%
+The dissipation rate Ωand deterministic fraction R2 are stable across all markets (CV ≈3%
+and 2% respectively). The scaled restoring force Φ varies by asset class, ranging from 0.016
+(currencies) to 0.292 (energy), which we find especially interesting, more discussion on this
+result is below.
+7
+
+
+Figure 3: Phase portraits for six futures markets at 1-hour aggregation. The spiral attractor
+structure appears across all asset classes: equity indices (ES, NQ), energy (CL), precious
+metals (GC), fixed income (ZB), and currencies (6E).
+The results are summarized in Figure 3 which shows phase portraits for six major futures
+markets. The same qualitative structure, trajectories spiraling toward equilibrium, appear in
+every market tested. The differences between the various sample markets (quantified in Table
+2 above) encode economically meaningful information about asset-specific mean-reversion
+mechanisms, which we discuss in further detail below, but the overall basic topology is
+invariant.
+2.5 Universal vs. Market-Specific Features
+The variation in Φ maps to known asset characteristics. Energy markets (CL) have storage
+constraints and physical delivery that create strong mean-reversion (high Φ). Currency
+markets (6E) follow near-random-walk dynamics due to uncovered interest parity (low Φ).
+The universality of Ωand R2 suggests these quantities reflect structural properties of liquid
+market microstructure rather than asset-specific dynamics.
+These results paint a clear picture of what is universal and what is not.
+The dissipation rate Ω= 1.15 ± 0.04 is remarkably consistent across all six markets, from
+8
+
+
+equity indices to Treasury bonds to currency pairs. This suggests that the rate at which
+momentum shocks dissipate reflects a universal property of liquid markets, one likely rooted
+in order flow exhaustion, market maker inventory management, and arbitrage activity, rather
+than anything specific to the underlying asset.
+The consistency is worth emphasizing:
+momentum perturbations decay at essentially the same rate whether one is trading crude oil
+or the euro.
+The deterministic fraction R2 = 0.57 ± 0.01 is equally stable. The balance between predictable
+mean-reversion and unpredictable noise appears to be a structural constant of liquid futures
+markets, independent of asset class. Roughly 57% of momentum dynamics are systematic,
+everywhere we look.
+The scaled restoring force Φ, by contrast, varies by more than an order of magnitude, from
+0.016 in currencies to 0.292 in energy, and this variation turns out to encode fundamental
+information about how different asset classes anchor to equilibrium. Table 3 organizes these
+results by the strength of the underlying price-anchoring mechanisms.
+Table 3: The scaled restoring force Φ by asset class, ordered by the strength of fundamental
+price-anchoring mechanisms.
+price anchors
+monetary/commodity dynamics, central bank activity
+investors, stat-arb, index rebalancing
+convexity, Fed policy
+with uncovered interest parity, weak mean-reversion
+The ordering Φ_CL > Φ_GC > Φ_equity > Φ_ZB > Φ_6E, thus reflects how fundamental
+differences in prices anchor to equilibrium values across asset classes.
+3. Economic Interpretation of the Topology
+3.1 The Two Economic Forces
+The spiral topology is not just a mathematical curiosity, it has a direct economic reading.
+The SDHO dynamics decompose into two forces, each with a clear market interpretation.
+The restoring force (−kx) pushes acceleration in the opposite direction to momentum. When
+prices are elevated (positive momentum, right side of phase space), the restoring force
+pushes acceleration negative; arbitrageurs sell the rally. When prices are depressed (negative
+momentum), acceleration is pushed positive; contrarians buy the dip. This is the mean-
+reversion engine, reflecting the collective action of value investors, statistical arbitrageurs,
+and market makers managing inventory.
+9
+
+
+The damping force (−Ωy) causes acceleration itself to decay toward zero. Regardless of
+position in phase space, acceleration naturally exhausts over time as order flow completes
+and news gets priced in. This prevents perpetual oscillation and ensures markets settle rather
+than cycling indefinitely.
+The superposition of both forces creates the characteristic attractor visible in the phase
+portraits. All trajectories are pulled toward equilibrium, but the path is curved rather than
+direct, reflecting the oscillatory nature of price dynamics around fair value.
+The mathematical structure generalizing to longer aggregation periods will be discussed in a
+later paper (Dean, 2026).
+Figure 4: Decomposition of SDHO dynamics. Panel A: Restoring force (−αx) drives mean
+reversion, pushing acceleration opposite to momentum. Panel B: Damping force (−βy) causes
+acceleration to decay toward zero as order flow exhausts.
+3.2 Deterministic Trajectories
+Given the flow field, we can integrate deterministic trajectories which are the paths that a
+“particle” or “market state” would follow experiencing only the deterministic forces, without
+stochastic shocks. These represent the expected paths from any given starting point or initial
+condition for several representative market scenarios, as illustrated in Figure 5. Describing
+these scenarios individually we have:
+Crash start (cyan): Beginning with strong negative momentum and positive acceleration
+(the market is falling but trying to recover), the deterministic path spirals inward. The
+recovery is neither immediate nor direct; momentum overshoots, acceleration reverses, and
+the market gradually finds equilibrium through damped oscillation.
+10
+
+
+Figure 5: Deterministic trajectories from various market scenarios. Crash recovery spirals
+inward through damped oscillation. Rally fading reverses through mean reversion. Actual
+paths deviate stochastically, but the deterministic component (R2 ≈0.57) provides a sub-
+stantial baseline.
+Capitulation (green): Starting with strong negative momentum and negative acceleration
+(the market is falling and falling faster), the trajectory first swings through even more negative
+acceleration before the restoring force dominates. This captures the “capitulation” pattern
+where selling exhausts itself.
+Rally (yellow): Strong positive momentum with positive acceleration. The flow field
+11
+
+
+predicts this rally will fade; acceleration turns negative as mean reversion kicks in, and the
+market eventually returns toward equilibrium.
+Mild scenarios (magenta, white): From moderate displacements, the return to equilibrium
+is faster and more direct, with less pronounced oscillation.
+4. Governing Equations and the SINDy Framework
+4.1 The SINDy Framework
+The phase portrait reveals what the dynamics look like: a stable dissipative attractor with
+spiral topology. But what equations produce this structure? The visual evidence suggests a
+damped oscillator, but rather than assume this form, we let the data decide.
+Sparse Identification of Nonlinear Dynamics (SINDy) discovers governing equations from data.
+Given observations of state variables and their derivatives, SINDy seeks sparse representations
+in a library of candidate functions. We use a library containing polynomial terms up to third
+order:
+Θ(z) = [1, x, y, x2, xy, y2, x3, x2y, xy2, y3]
+The algorithm fits coefficients for all terms, then applies sparsity-promoting regularization to
+zero out terms that don’t contribute meaningfully. What remains is the simplest equation
+consistent with the data.
+4.2 Discovered Equations
+Applying SINDy to 1-hour ES data (∼92,000 observations), the algorithm returns:
+dx
+dt ≈y
+dy
+dt ≈−0.24x −1.15y
+All higher-order terms are zeroed by the sparsity threshold. This is the damped harmonic
+oscillator with damping rate, Ω≈1.15 and spring constant k ≈0.24.
+Table 4: Governing equations discovered by SINDy from ∼92,000 hourly ES observations.
+All nonlinear candidate terms were zeroed by sparsity regularization.
+Equation
+Discovered Form
+R2
+dx/dt
+y
+1.000
+dy/dt
+-0.24x - 1.15y
+0.570
+12
+
+
+The first equation is exact by construction: yt = xt −xt−1 is the discrete derivative of x.
+The R2 of 0.570 for dy/dt indicates that about 57% of momentum acceleration variance is
+explained by linear dynamics, with the remainder attributed to stochastic forcing.
+Economic Interpretation of R2 ≈0.57. The market’s acceleration decomposes into two
+components:
+• 57% deterministic: Predictable from current state (x, y) via the ODE
+• 43% stochastic: Unpredictable shocks (news, order flow, randomness)
+This decomposition appears in the full stochastic equation:
+dy
+dt = −0.24x −1.15y
+|
+{z
+}
+Deterministic (57%)
++
+σ · dW
+|
+{z
+}
+Stochastic (43%)
+The market is more than half physics, less than half noise. This aligns with intuition: not R2
+≈0 (pure random walk), not R2 ≈1 (perfectly predictable), but R2 ≈0.57, which indicates
+that the market has a substantial structure, but that it is noisy enough to prevent easy
+exploitation.
+This finding speaks to a long-standing debate in financial economics between proponents of
+the random walk hypothesis (Malkiel, 1973) and researchers who have documented significant
+departures from random walk behavior (Lo and MacKinlay, 1999). Our results suggest both
+perspectives capture partial truths: the market exhibits substantial deterministic structure,
+yet retains enough stochastic character to make consistent exploitation difficult.
+4.3 Interpretation and Domain of Validity
+It is worth pausing to clarify what R2 ≈0.57 does and does not mean. The quantity we
+are reporting is a conditional variance decomposition: it measures how much of the variance
+in momentum acceleration is explained by the current phase space position (x, y). This
+is not a claim about price predictability or tradable alpha. The dependent variable here
+is ∆x (change in momentum), not returns, and the fit is in-sample rather than a forecast.
+The distinction matters, because a high in-sample R2 on acceleration says nothing directly
+about one’s ability to profit from the signal, it simply characterizes the balance between
+deterministic and stochastic forces acting on momentum dynamics.
+A natural follow-up question is: over what range of timescales does this linear SDHO
+description hold? To find out, we tested the model across multiple aggregation levels, from
+hourly to weekly, and the results are summarized in Table 5.
+The picture that emerges is reassuring: R2 remains essentially unchanged from hourly through
+daily timescales, and the slight uptick at weekly aggregation (0.591) is still consistent with
+the linear model. The SDHO provides an effective description across this entire range.
+13
+
+
+Table 5: Deterministic fraction R2 for the linear SDHO across aggregation timescales.
+Timescale
+n
+R2 (Linear)
+1-Hour
+91,897
+0.570
+Daily
+4,803
+0.571
+Weekly
+1,128
+0.591
+The story changes at longer horizons. At monthly and beyond, preliminary analysis indicates
+that nonlinear terms begin to contribute significantly, suggesting a qualitatively different
+dynamical regime. This is where the connection to the momentum anomaly documented by
+Jegadeesh and Titman (1993) becomes relevant, and the characterization of this nonlinear
+regime is the subject of a companion paper (Dean, 2026).
+5. Dimensionless Quantities
+There is a subtlety lurking in the SINDy results that we have not yet addressed: coordinate
+dependence. The fitted spring constant k changes dramatically with the momentum look-back
+period: 2 bars gives k ≈0.65; 30 bars gives k ≈0.03. Same market, same data, factor of 20
+difference. The reason is straightforward, a longer look-back stretches the momentum axis,
+mechanically reducing k, but the consequence is important: k by itself is not a meaningful
+characterization of the dynamics. To say anything robust, we need quantities that do not
+depend on how we define the momentum coordinate.
+By systematically varying both look-back period (2-30 bars) and aggregation timescale (1
+minute to daily), we find three combinations that remain stable. The dissipation rate Ω≈
+1.09 ± 0.05 (for look-backs ≥5) is naturally dimensionless. The deterministic fraction R2
+≈0.57 ± 0.05 is a variance ratio, also dimensionless. And the scaled restoring force Φ =
+k · Var(x) ≈0.046 ± 0.003 absorbs the coordinate dependence of k by multiplying it against
+the variance of the coordinate it acts on, a construction whose deeper meaning will become
+clear when we derive the Fisher metric in Section 6.2.
+Table 6: SDHO parameters across look-back periods at 1-hour aggregation, demonstrating
+coordinate independence of Ω, R2, and Φ.
+Look-back
+k
+Var(x)
+Ω
+R2
+Φ
+3
+0.427
+0.113
+1.23
+0.61
+0.048
+5
+0.241
+0.189
+1.15
+0.57
+0.046
+10
+0.116
+0.394
+1.08
+0.54
+0.046
+20
+0.056
+0.811
+1.04
+0.52
+0.046
+14
+
+
+Table 6 tells the full story: while k varies by a factor of 8, the dimensionless quantities hold
+steady (CV < 10% for look-backs ≥5). The variation in Ωat short look-backs (1.23 at
+look-back 3 versus 1.04 at look-back 20) reflects the interplay between damping and restoring
+forces discussed in Section 6.1, where we show that this variation corresponds to a genuine
+transition through the critical damping boundary.
+6. Connections to Dynamical Systems Theory
+6.1 Liouville’s Theorem and Lyapunov Stability
+With this dynamical model we can now connect the empirical findings to standard results
+from dynamical systems theory. The first connection is to Liouville’s theorem, which says
+that for a Hamiltonian system, phase space volume is conserved. Our system is manifestly
+not Hamiltonian, and we can see this directly by computing the divergence of the flow field:
+∇· F = ∂˙x
+∂x + ∂˙y
+∂y = 0 + (−Ω) = −Ω
+The divergence is −Ω≈−1.15, meaning that phase space volumes shrink at a rate of about
+1.15 per bar. This is a dissipative system: momentum information is irreversibly lost as order
+flow exhausts and prices equilibrate. The nonzero divergence is the geometric signature of
+that dissipation.
+The second connection is to Lyapunov stability. The system matrix for the linearized SDHO
+is:
+A =
+ 
+0
+1
+−k
+−Ω
+!
+with eigenvalues:
+λ1,2 = −Ω±
+√
+Ω2 −4k
+2
+Since Ω> 0 and k > 0, both eigenvalues always have negative real part, which guarantees
+asymptotic stability of the origin. The market always returns to equilibrium. But the
+character of that return depends on the discriminant ∆= Ω2 −4k: when ∆< 0 the system
+is underdamped (complex eigenvalues, oscillatory decay); when ∆= 0 it is critically damped
+(fastest non-oscillatory decay); and when ∆> 0 it is overdamped (two real eigenvalues,
+monotonic decay).
+15
+
+
+Table 7: Discriminant analysis by look-back period. The system crosses the critical damping
+boundary between look-back 3 and 5.
+3
+0.427
+1.23
+1.51
+1.71
+-0.19
+Underdamped
+5
+0.241
+1.15
+1.32
+0.96
++0.35
+Overdamped
+10
+0.116
+1.08
+1.17
+0.46
++0.70
+Overdamped
+20
+0.056
+1.04
+1.08
+0.22
++0.85
+Overdamped
+What makes this interesting is that the market sits right near the critical damping boundary,
+kcrit = Ω2/4, and the look-back parameter n controls which side of the boundary the system
+falls on. Table 7 tells the story.
+At the baseline look-back of 5 bars, the parameters (k = 0.24, Ω= 1.15) give ∆= +0.35 > 0,
+placing the system just into the overdamped regime. The eigenvalues are two distinct negative
+reals:
+λ1 ≈−0.28,
+λ2 ≈−0.87
+These correspond to a slow mode with characteristic time τslow = 1/|λ1| ≈3.6 hours and
+a fast mode at τfast = 1/|λ2| ≈1.1 hours. At short look-backs (n = 3), the restoring force
+k is large enough to push the system across the boundary into the underdamped regime
+(∆= −0.19 < 0), where the eigenvalues become complex conjugates with genuine oscillatory
+character.
+This raises an apparent puzzle: if the system is overdamped at the baseline look-back, why
+do the phase portraits show such pronounced spiral structure? There are three reasons.
+First, the system is close to critical. At n = 5, the restoring force sits at 73% of its critical
+value (k/kcrit = 0.24/0.33 = 0.73), and this proximity means the slow and fast modes have a
+substantial timescale ratio (τslow/τfast ≈3.3). An overdamped system near criticality does
+not return to the origin along a straight line; its trajectories curve substantially as the fast
+mode decays ahead of the slow mode.
+Second, the stochastic component matters. With R2 ≈0.57, fully 43% of the dynamics
+are noise-driven, and in a near-critically-damped system these random perturbations are
+channeled along the curved trajectories, amplifying the spiral appearance through continual
+excursions across phase space.
+Third, the system genuinely transitions through the critical boundary as the measurement
+timescale changes. At look-back n = 3, it is underdamped with true oscillatory decay. The
+spiral topology visible in the phase portraits reflects this underlying oscillatory character at
+the shortest timescales, which persists visually even as longer look-back parameters move
+into the overdamped regime.
+The economics here are suggestive. The slow eigenmode (τ ≈3.6 hours) sets the timescale on
+which momentum perturbations dissipate, governed by arbitrage and order flow exhaustion.
+The fast eigenmode (τ ≈1.1 hours) captures the rapid equilibration of acceleration, where
+buying and selling pressure adjusts quickly. The half-life of the slow mode, t1/2 = ln 2/|λ1| ≈
+16
+
+
+2.5 hours, implies that momentum shocks lose half their intensity within a single trading
+session, consistent with the intraday mean-reversion documented by Safari and Schmidhuber
+(2025).
+The proximity to critical damping may itself be economically meaningful. A market that is too
+underdamped would oscillate excessively, creating opportunities for mean-reversion traders;
+one that is too overdamped would settle too slowly, inviting trend followers. The near-critical
+equilibrium may represent a dynamical balance between these competing strategies, consistent
+with the adaptive markets hypothesis (Lo, 2004, 2017).
+6.2 Information Geometry
+In Section 5 we observed that Ω, R2, and Φ are stable across look-back periods while k
+itself is not, and promised that the Fisher metric would explain why. Information geometry
+(Amari, 2000) provides the framework: it views the parameter space of a statistical model as
+a Riemannian manifold equipped with the Fisher information metric (Rao, 1945; Schouten,
+1954), which measures statistical distinguishability between nearby parameter values. The
+natural coordinates on this manifold are the ones in which parameters are most sharply
+resolved by the data.
+For the SDHO with parameters (k, Ω, σ), we can compute this metric explicitly, and the
+result is illuminating. The starting point is the stationary covariance. The continuous-time
+system ˙x = y, ˙y = −kx −Ωy + σξ(t) has system matrix A and diffusion matrix D:
+A =
+ 
+0
+1
+−k
+−Ω
+!
+,
+D =
+ 
+0
+0
+0
+σ2
+!
+The stationary covariance Σ satisfies the Lyapunov equation AΣ + ΣA⊤+ D = 0. Writing
+Σ =
+
+a c
+c b
+
+and solving entry by entry gives three conditions: (i) c = 0, (ii) b = ka, and (iii)
+2Ωb = σ2. Therefore:
+Var(x) = σ2
+2kΩ,
+Var(y) = σ2
+2Ω= k · Var(x),
+Cov(x, y) = 0
+The vanishing covariance is structural, not coincidental: it follows from ˙x = y having
+no dependence on x. Since the conditional distribution of the observation is dy | (x, y) ∼
+N(−kx−Ωy, σ2), the Fisher information components averaged over the stationary distribution
+are gkk = E[x2]/σ2 = 1/(2kΩ), gΩΩ= E[y2]/σ2 = 1/(2Ω), and gkΩ= E[xy]/σ2 = 0. The
+noise parameter σ is orthogonal to both location parameters by the standard location-scale
+factorization (Efron, 1975). The Fisher metric is therefore diagonal in (k, Ω, σ):
+ds2 = dk2
+2kΩ+ dΩ2
+2Ω+ 2 dσ2
+σ2
+This diagonality is the key result, and it has three immediate consequences that explain the
+empirical findings of Section 5.
+17
+
+
+The first is that Ωoccupies its own Fisher-orthogonal direction. Its metric coefficient 1/(2Ω)
+depends only on itself, so the maximum-likelihood estimate of Ωis insensitive to perturbations
+in k or σ at leading order. This is the geometric reason for the observed stability of Ωacross
+look-back periods: changing the look-back perturbs k and Var(x) substantially, but Ωis
+geometrically isolated on the statistical manifold. It simply does not “see” the coordinate
+change.
+The second consequence explains the stability of Φ. The scaled restoring force Φ = k · Var(x)
+simplifies to σ2/(2Ω), and the k-dependence cancels exactly. This is why Φ remains constant
+at 0.046 in Table 6 even though k varies by a factor of 8: the cancellation is not a numerical
+accident but a consequence of the Lyapunov equation, Var(x) = σ2/(2kΩ), which makes
+k · Var(x) = σ2/(2Ω) independent of k. Geometrically, Φ parameterizes the noise-dissipation
+submanifold in a way that absorbs the coordinate dependence of k.
+Third, the relation Var(y) = k · Var(x) = Φ provides a checkable prediction: the scaled
+restoring force should equal the variance of acceleration in the data. This also implies that
+R2, as a variance ratio, depends on Ωalone rather than on k and σ independently. The
+precise functional relationship between R2 and Ω, which provides a geometric derivation of
+the observed universality R2 ≈0.57, is developed in a companion paper (Dean, 2026c).
+In short, the diagonal Fisher metric provides the theoretical foundation for the empirical
+observation that Ω, R2, and Φ are the natural characterization of SDHO dynamics: they are
+the directions of maximum statistical distinguishability on the model manifold. The stability
+we observe is not a coincidence, it is a consequence of the geometry of the parameter space.
+6.3 Contact Geometry for Dissipative Systems
+There is a natural question about geometric framework. Symplectic geometry is the standard
+language for Hamiltonian systems (Arnold, 1989), and coordinate invariance in that setting
+is well understood (Dean, 1993, 1996). But our system is dissipative, phase space volumes
+shrink, as we saw from Liouville’s theorem, so symplectic structure is not preserved. What is
+the right geometric framework?
+The answer is contact geometry (Bravetti et al., 2017), which extends symplectic structure to
+odd-dimensional manifolds by introducing an additional coordinate. In the present context, we
+extend the two-dimensional phase space (x, y) to include an “entropy” or “action” coordinate
+s, whose dynamics are:
+ds
+dt = Ωy2
+This equation has a clean physical interpretation: Ωy2 is the rate at which the system
+dissipates energy into its environment, the market analog of entropy production.
+The
+dissipation coefficient Ωappears once again as the fundamental parameter, now governing
+irreversibility in the extended phase space. The contact 1-form ds −y dx is preserved under
+the flow, even though symplectic structure is not, giving the dissipative dynamics a proper
+geometric home.
+18
+
+
+This framework places the empirical finding Ω≈1.15 in a richer context: it measures not
+just a decay rate, but the fundamental coupling between the market’s phase space dynamics
+and the “thermodynamic” environment of order flow, information processing, and liquidity
+provision that surrounds it.
+6.4 Connection to the Hurst Exponent
+A natural question is how the SDHO framework connects to the Hurst exponent, the standard
+measure of long-range dependence in time series. Recall that H > 0.5 indicates persistence
+(trending), H < 0.5 indicates anti-persistence (mean-reversion), and H = 0.5 corresponds to a
+random walk.
+Our framework provides a mechanistic explanation for the mean-reverting regime (H < 0.5)
+that has been widely documented at short horizons. The attractor structure we observe,
+with the restoring force (k > 0) pulling momentum back toward zero and damping (Ω>
+0) causing acceleration to exhaust, is precisely the dynamical signature of anti-persistence.
+When momentum mean-reverts, prices stabilize rather than trend, and this is exactly what
+the SDHO predicts at intraday timescales.
+The decay timescales we compute (τ ≈1-4 hours at hourly aggregation) align well with
+independent empirical findings. Safari and Schmidhuber (2025) document mean-reversion at
+short horizons transitioning to momentum (persistence) at longer horizons, and our framework
+explains the short-horizon side of that transition: the restoring force represents value investors
+and arbitrageurs pushing prices back toward fair value, while the damping represents order
+flow exhaustion and news getting priced in.
+The story gets more interesting at longer horizons where see that the transition to persistence
+(H > 0.5) at monthly and longer timescales coincides with where our linear SDHO breaks
+down. Preliminary analysis shows R2 increasing and nonlinear terms becoming significant,
+suggesting a qualitatively different dynamical regime. The characterization of this persistence
+regime, and its connection to the momentum anomaly of Jegadeesh and Titman (1993), is
+developed in a companion paper (Dean, 2026).
+6.5 Economic Interpretation
+Each of the three invariants has a natural economic reading, and taken together they tell a
+coherent story about how liquid markets process information.
+The dissipation rate Ω≈1.15 measures how quickly buying or selling pressure exhausts
+itself as orders are filled, market makers adjust quotes, and arbitrageurs trade against the
+imbalance. A value greater than unity means this process is fast, most of an acceleration
+shock is absorbed within a single bar, but not instantaneous. There is a brief window in
+which the pressure is still live, and this is the window that the deterministic component of
+the dynamics describes.
+The deterministic fraction R2 ≈0.57 places the market near a boundary between order and
+noise. If R2 were substantially higher, the predictable component would invite competition
+19
+
+
+from systematic traders, eroding the signal until predictability fell. If R2 were much lower, the
+market would resemble a pure random walk, inconsistent with the documented microstructure
+effects. The observed value may represent a quasi-stable equilibrium in which predictability is
+limited enough to prevent easy exploitation but substantial enough to reward careful analysis,
+consistent with the adaptive markets hypothesis (Lo, 2004, 2017).
+Finally, the scaled restoring force Φ quantifies how aggressively prices revert to fair value, and
+its cross-market variation (Table 2) maps onto known asset characteristics. Energy markets,
+with storage constraints and physical delivery, exhibit the strongest mean reversion; currency
+markets, governed by near-random-walk dynamics and uncovered interest parity, exhibit the
+weakest. In this sense Φ is a fingerprint of the asset class, encoding the intensity of the
+arbitrage mechanisms that anchor prices to fundamentals.
+6.6 Limitations
+Several caveats are worth noting. The primary analysis centers on a single market (ES),
+though the cross-market analysis in Section 2 demonstrates that the key findings generalize
+across asset classes. The linear SDHO model applies at intraday-through-weekly timescales;
+at monthly and longer horizons, preliminary analysis indicates that nonlinear terms become
+significant, and the dynamics appear qualitatively different.
+We have treated the dimensionless quantities as static constants, but they may shift during
+extreme market regimes. To test this, we estimated Ωand R2 on first-half versus second-
+half subsamples and found values consistent within statistical uncertainty, which suggests
+reasonable stability over the 15-year sample period, but a more granular rolling-window
+analysis would be informative (see Section 6.7). Finally, the R2 ≈0.57 is an in-sample fit;
+out-of-sample performance would almost certainly be lower, and as discussed in Section
+4.3, this quantity characterizes the deterministic/stochastic decomposition of acceleration
+dynamics, not return predictability.
+6.7 Future Work
+Several interesting directions follow from these results. The most immediate is the nonlinear
+regime at longer horizons where preliminary analysis indicates that the linear SDHO approxi-
+mation gives way to nonlinear dynamics and bifurcation theory at monthly timescales and
+beyond. A companion paper (Dean, 2026) develops this analysis, including the connection to
+the momentum anomaly literature.
+A second direction is to estimate the dimensionless quantities in rolling windows, tracking
+their evolution through time rather than treating them as static constants. VIX may serve as
+a natural regime indicator here, distinguishing calm periods from crisis episodes and testing
+whether Ωand R2 shift during market stress.
+This connects to a third possibility: extending the phase space to include volatility (VIX)
+as a third coordinate.
+The current two-dimensional analysis captures momentum and
+20
+
+
+acceleration; adding a volatility axis could reveal richer attractor structure and connect the
+SDHO framework to the variance risk premium literature.
+Finally, the flow field representation provides a natural interface with modern machine
+learning. The rich pattern structure visible in the phase plane is well-suited to generative
+models that can sample trajectories respecting the discovered dynamics, enabling synthesis
+of realistic market data. Reinforcement learning agents can exploit the low-dimensional state
+space, with the dimensionless quantities serving as regime indicators. The invariance of Ω
+and R2 across asset classes suggests transfer learning opportunities, where a model trained
+on one market may generalize to others with only Φ needing recalibration.
+7. Conclusion
+Constructing a kinematic phase space from futures price momentum and applying sparse
+identification methods, we discover that the dynamics at intraday-to-weekly timescales take
+the form of a stochastic damped harmonic oscillator, a structure that arises from the data
+rather than being imposed. The phase portraits display a dissipative spiral attractor that
+persists from 1-minute to daily timescales and appears across all six markets tested.
+Three dimensionless quantities characterize these dynamics. The dissipation rate Ω= 1.15
+± 0.04 and the deterministic fraction R2 = 0.58 ± 0.01 are universal across asset classes
+(CV < 4%), while the scaled restoring force Φ varies from 0.016 in currencies to 0.292 in
+energy, encoding how aggressively each asset class mean-reverts. The invariance of Ωand
+R2 suggests these quantities reflect fundamental properties of liquid market microstructure,
+the rate at which order flow exhausts, the efficiency of arbitrage activity, and the balance
+between predictable and unpredictable dynamics, that transcend specific asset classes. The
+variation in Φ, by contrast, maps directly onto known differences in how prices anchor to
+equilibrium: storage constraints and physical delivery in energy, uncovered interest parity in
+currencies.
+The Fisher metric on the SDHO parameter space turns out to be diagonal in (k, Ω, σ), and
+this diagonality provides the geometric explanation for the observed stability: Ωis isolated
+on the statistical manifold, and Φ = σ2/(2Ω) absorbs the coordinate dependence of k. The
+system sits near the critical damping boundary, with the look-back parameter controlling
+the transition between underdamped and overdamped regimes and characteristic momentum
+decay times of 1-4 hours. The near-critical equilibrium may reflect a dynamical balance
+between mean-reversion and trend-following strategies, consistent with the adaptive markets
+hypothesis.
+The finding that R2 ≈0.57 across all markets suggests that liquid futures operate at an
+invariance boundary between deterministic and stochastic behavior, where predictability
+is limited enough to prevent easy exploitation but substantial enough to reward careful
+analysis. Whether these quantities are truly invariant in some deep sense, or merely stable
+over the conditions we examined, remains to be seen. But the fact that they persist across
+21
+
+
+five orders of magnitude in timescale, across look-back definitions, and across asset classes
+from equity indices to currencies is compelling evidence for genuine structural constants of
+market dynamics.
+At monthly and longer horizons, the linear SDHO gives way to nonlinear dynamics and
+a qualitatively different regime. The characterization of this transition is developed in a
+companion paper (Dean, 2026).
+References
+Amari, S., and Nagaoka, H. (2000). Methods of Information Geometry. American Mathemat-
+ical Society.
+Arnold, V. I. (1989). Mathematical Methods of Classical Mechanics, 2nd ed. Springer.
+Bastos, J. A., and Caiado, J. (2011). “Recurrence quantification analysis of global stock
+markets.” Physica A, 390(7), 1315-1325.
+Boninsegna, L., Nüske, F., and Clementi, C. (2018). “Sparse learning of stochastic dynamical
+equations.” Journal of Chemical Physics, 148(24), 241723.
+Bouchaud, J.-P., and Cont, R. (1998). “A Langevin approach to stock market fluctuations
+and crashes.” European Physical Journal B, 6, 543-550.
+Bravetti, A., Cruz, H., and Tapias, D. (2017). “Contact Hamiltonian mechanics.” Annals of
+Physics, 376, 17-39.
+Brunton, S. L., Proctor, J. L., and Kutz, J. N. (2016). “Discovering governing equations
+from data by sparse identification of nonlinear dynamics.” PNAS, 113(15), 3932-3937.
+Dean, B. H. (1993). “Riemannian Forms and Symplectic Integration in Hamiltonian Mechan-
+ics.” M.S. Thesis (Physics), West Virginia University.
+Dean, B. H. (1996). “Tensors and Analytic Structure in Hamiltonian Theory.” M.S. Thesis
+(Mathematics), West Virginia University.
+Dean, B. H. (1999). “Variational Results and Solutions in Gauge Gravity and a Bifurcation
+Analysis of Black Hole Orbital Dynamics.” Ph.D. Dissertation (Physics), West Virginia
+University. arXiv:1312.7501 (https://arxiv.org/abs/1312.7501)
+Dean, B. H. (2026). “Scale-Dependent Dynamics in Equity Market Phase Space.” Working
+paper.
+Dean, B. H. (2026c). Working paper.
+Efron, B. (1975). Differential-Geometrical Methods in Statistics. Institute of Mathematical
+Statistics, Hayward, CA.
+Jegadeesh, N., and Titman, S. (1993). “Returns to buying winners and selling losers.” Journal
+of Finance, 48(1), 65-91.
+22
+
+
+Lo, A. W. (2004). “The adaptive markets hypothesis.” Journal of Portfolio Management,
+30(5), 15-29.
+Lo, A. W. (2017). Adaptive Markets: Financial Evolution at the Speed of Thought. Princeton
+University Press.
+Lo, A. W., and MacKinlay, A. C. (1999). A Non-Random Walk Down Wall Street. Princeton
+University Press.
+Malkiel, B. G. (1973). A Random Walk Down Wall Street. W. W. Norton.
+Marwan, N., et al. (2007). “Recurrence plots for the analysis of complex systems.” Physics
+Reports, 438(5-6), 237-329.
+Rao, C. R. (1945). Information and the accuracy attainable in the estimation of statistical
+parameters. Bulletin of the Calcutta Mathematical Society, 37, 81-91.
+Rao, C. R. (1992). Geometry of Statistical Inference. John Wiley & Sons, New York.
+Safari, S. A., and Schmidhuber, C. (2025). “Trends and reversion in financial markets on
+time scales from minutes to decades.” arXiv:2501.16772.
+Sandoval, L., and De Paula Franca, I. (2011). “Shocks in financial markets and damped
+harmonic oscillators.” arXiv:1103.1992.
+Schouten, J. A. (1954). Ricci-Calculus: An Introduction to Tensor Analysis and Its Geomet-
+rical Applications, 2nd ed. Springer.
+Bohumil Stádník, “Spring Oscillations within Financial Markets,” Procedia - Social and
+Behavioral Sciences 110, 1176-1184 (2014)
+Takens, F. (1981). “Detecting strange attractors in turbulence”. In Dynamical Systems and
+Turbulence, Lecture Notes in Mathematics, vol. 898, Springer-Verlag, pp. 366-381.
+Appendix A: Reproducibility
+All analysis was performed using Python with NumPy, Pandas, SciPy, and Matplotlib.
+The data source for this study was Databento (https://databento.com). The author is not
+affiliated with Databento in any way.
+Author Biography
+Bruce H. Dean received the B.A. (1991), M.S. (1994), and Ph.D. (1999) degrees in Physics
+from West Virginia University, as well as the M.S. in Mathematics (1996). His research
+23
+
+
+focused on Hamiltonian dynamics, symplectic geometry, gauge fields, and bifurcation analysis
+in general-relativistic systems.
+Following graduation, Dr. Dean joined the NASA Goddard Space Flight Center where he
+formed the Wavefront Sensing and Control Group and was a lead algorithm developer for the
+James Webb Space Telescope (JWST) wavefront commissioning system.
+Dr. Dean has 14 U.S. patents and is currently an independent researcher applying symplectic
+and pattern recognition methods in dynamical systems theory.
+Submitted to SSRN, December 2025. Revised March 2026 (v1.2.3).
+24
